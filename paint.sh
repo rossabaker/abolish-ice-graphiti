@@ -16,4 +16,4 @@ do
 		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign --allow-empty
 	done
 done < dates.txt
-git push origin master
+git push origin $(git rev-parse --abbrev-ref HEAD)
