@@ -4,10 +4,7 @@ set -e
 
 while read line
 do
-	IFS='/' read -ra PARAMS <<< "$line"
-	D=${PARAMS[0]}
-	M=${PARAMS[1]}
-	Y=${PARAMS[2]}
+	IFS='-' read -r Y M D <<< "$line"
 	I=180
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
