@@ -1,4 +1,4 @@
-#!/bin/bash		
+#!/usr/bin/env bash
 while read line	 
 do		
 	IFS='/' read -ra PARAMS <<< "$line"
