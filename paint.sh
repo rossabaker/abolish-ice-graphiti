@@ -20,14 +20,14 @@ do
 				cd $D
 				for i in $( eval echo {1..$I} )
       			do
-      				echo "$i on $D/$M/$Y" > commit.md
+      				echo "$i on $Y-$M-$D" > commit.md
                                 s=$(printf "%02d" $(expr $i % 60))
                                 m=$(printf "%02d" $(expr $i / 60))
         			export GIT_COMMITTER_DATE="$Y-$M-$D 12:$m:$s"
         			export GIT_AUTHOR_DATE="$Y-$M-$D 12:$m:$s"
                                 echo $s $m $GIT_COMMITTER_DATE $GIT_AUTHOR_DATE
         			git add commit.md -f
-        			git commit --date="$Y-$M-$D 12:$m:$s" -m "$i on $M $D $Y" --no-gpg-sign
+        			git commit --date="$Y-$M-$D 12:$m:$s" -m "$i on $Y-$M-$D" --no-gpg-sign
         		done
         	cd ../
         cd ../
