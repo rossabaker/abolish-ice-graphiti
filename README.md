@@ -11,9 +11,9 @@
 ./paint.sh
 ```
 
-### Speed vs. clarity
+### Mine is hard to read
 
-The script needs to generate many more commits than your busiest days to be legible. your other contributions to make a loud and clear statement.  The `$I` variable determines the number of commits.  The larger the number, the slower it runs.  The smaller the number, the more dark green you may see.
+The script needs to generate many more commits than your busiest days to make a loud and clear statement.  The `$I` variable determines the number of commits.  If your graph does not turn a crisp, dark green "ABOLISH ICE,"" try increasing `$I`.
 
 ## Credit
 
