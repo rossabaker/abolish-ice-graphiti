@@ -27,7 +27,7 @@ do
         			export GIT_AUTHOR_DATE="$Y-$M-$D 12:$m:$s"
                                 echo $s $m $GIT_COMMITTER_DATE $GIT_AUTHOR_DATE
         			git add commit.md -f
-        			git commit --date="$Y-$M-$D 12:$m:$s" -m "$i on $M $D $Y"
+        			git commit --date="$Y-$M-$D 12:$m:$s" -m "$i on $M $D $Y" --no-pgp-sign
         		done
         	cd ../
         cd ../
@@ -35,5 +35,5 @@ do
 done < dates.txt
 git push origin master
 git rm -rf 20**
-git commit -am "cleanup"
+git commit -am "cleanup" --no-pgp-sign
 git push origin master
