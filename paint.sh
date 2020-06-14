@@ -6,32 +6,22 @@ do
 	M=${PARAMS[1]}
 	Y=${PARAMS[2]}
 	I=180
-	if [ ! -d "$Y" ]; then
-    	mkdir $Y
+	d="$Y-$M-$D"
+	if [ ! -d "$d" ]; then
+	    mkdir -p $d
 	fi	
-		cd $Y
-		if [ ! -d "$M" ]; then
-			mkdir $M
-		fi
-			cd $M
-			if [ ! -d "$D" ]; then
-				mkdir $D
-			fi
-				cd $D
-				for i in $( eval echo {1..$I} )
-      			do
-      				echo "$i on $Y-$M-$D" > commit.md
-                                s=$(printf "%02d" $(expr $i % 60))
-                                m=$(printf "%02d" $(expr $i / 60))
-        			export GIT_COMMITTER_DATE="$Y-$M-$D 12:$m:$s"
-        			export GIT_AUTHOR_DATE="$Y-$M-$D 12:$m:$s"
-                                echo $s $m $GIT_COMMITTER_DATE $GIT_AUTHOR_DATE
-        			git add commit.md -f
-        			git commit --date="$Y-$M-$D 12:$m:$s" -m "$i on $Y-$M-$D" --no-gpg-sign
-        		done
-        	cd ../
-        cd ../
-    cd ../	
+	pushd $d
+	for i in $( eval echo {1..$I} )
+	do
+		echo "$i on $d" > commit.md
+		s=$(printf "%02d" $(expr $i % 60))
+		m=$(printf "%02d" $(expr $i / 60))
+		export GIT_COMMITTER_DATE="$d 12:$m:$s"
+		export GIT_AUTHOR_DATE="$d 12:$m:$s"
+		git add commit.md -f
+		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign
+	done
+        popd
 done < dates.txt
 git push origin master
 git rm -rf 20**
