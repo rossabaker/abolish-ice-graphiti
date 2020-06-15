@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
-while read line	 
-do		
+
+commitmax=${commitmax:-50}
+
+if [ ! -z "${username}" ]; then
+	if [ ! -z "$(which curl 2> /dev/null)" ]; then
+		fetchcmd="curl -s"
+		else if [ ! -z "$(which wget 2> /dev/null)" ]; then
+			fetchcmd="wget -q -O -"
+		fi
+	fi
+
+	if [ ! -z "${fetchcmd}" ]; then
+		max=$($fetchcmd "https://github.com/${username}"|tr '<> ' "\n"|grep data-count|tr '="' "\n"|grep -v data-count|grep -v '^$'|sort -nr|head -1)
+		commitmax=${max:-${commitmax}}
+	fi
+fi
+
+while read line
+do
 	IFS='/' read -ra PARAMS <<< "$line"
 	D=${PARAMS[0]}
 	M=${PARAMS[1]}
