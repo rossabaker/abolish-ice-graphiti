@@ -16,4 +16,8 @@ do
 		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign --allow-empty
 	done
 done < dates.txt
-git push origin $(git rev-parse --abbrev-ref HEAD)
+git push $(git origin show) $(git branch --show-current)
+
+if [ $? -ne 0 ] ; then
+    echo "'git push' failed: please push the current branch to the default branch of a valid github repository"
+fi
