@@ -4,8 +4,8 @@ set -e
 
 while read line
 do
-	IFS='-' read -r Y M D <<< "$line"
-	I=180
+	IFS='-' read -r Y M D I <<< "$line"
+	I=$((${I:-4}*50))
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
