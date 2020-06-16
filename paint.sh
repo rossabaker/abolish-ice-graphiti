@@ -5,7 +5,7 @@ set -e
 while read line
 do
 	IFS='-' read -r Y M D I <<< "$line"
-	I=$((${I:-4}*50))
+	I=$((${I:-4}*(${commitmax:-50}+1)))
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
