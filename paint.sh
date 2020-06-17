@@ -15,5 +15,5 @@ do
 		export GIT_AUTHOR_DATE="$d 12:$m:$s"
 		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign --allow-empty
 	done
-done < "$(dirname $0)/dates.txt"
+done < "$(dirname "$0")/dates.txt"
 git push origin master
