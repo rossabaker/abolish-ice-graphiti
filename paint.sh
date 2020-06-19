@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-while read line	 
-do		
-	IFS='/' read -ra PARAMS <<< "$line"
-	D=${PARAMS[0]}
-	M=${PARAMS[1]}
-	Y=${PARAMS[2]}
-	I=180
+
+set -e
+
+while read line
+do
+	IFS='-' read -r Y M D I <<< "$line"
+	I=$((${I:-4}*(${commitmax:-50}+1)))
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
