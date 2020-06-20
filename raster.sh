@@ -14,9 +14,9 @@ usage="Usage: $0 [OPTIONS] \n
 Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dirname "$0")/paint.sh\n
 \n
 \t -n\t\t\t disable prompts \n
-\t -f, --font <font>\t select a font for rendering (default '${font}') \n
-\t -s, --size <fontsize>\t select a font size for rendering (default '${pt}') \n
-\t -c, --colors <colors>\t set the number of foreground colors to be used (maximum '${maxcolors}') \n
+\t -f, --font <font>\t select a font (name or filepath) for rendering [default '${font}'] \n
+\t -s, --size <fontsize>\t select a font size for rendering [default '${pt}'] \n
+\t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}'] \n
 \t -p, --partial\t\t render pixels to the current partial week, if needed. \n
 \t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname} \n
 \t -h, --help\t\t see this message and exit"
@@ -62,12 +62,12 @@ fi
 # decide if we have the tools to generate $tmpname, or if not, if we have a valid file to use
 if [ -z $(which convert 2> /dev/null) ]; then
     if [ ! -f "${tmpname}" ]; then
-	echo "This script requires imagemagick to be installed or an uncompressed ngm image to be supplied."
+	echo "This script requires imagemagick to be installed or an uncompressed .ngm image to be supplied."
 	exit 10
     else if [ "$(head -n1 ${tmpname})" != "P2" ]; then
 	     echo "only uncompressed .ngm image files are supported"
 	     exit 11
-	 else if [ "$(head -2 ${tmpname}|tail -1)" != "7 53" ]; then
+	 else if [ "$(head -2 ${tmpname}|tail -1)" != "7 ${weeks}" ]; then
 		  echo "image must be 7x${weeks} (${weeks}x7 rotated 90 degrees, and reflected)"
 		  exit 12
 
@@ -84,16 +84,16 @@ else
 	exit $err
     fi
 
-    # you don't need root to run cargo, so why not offer to get viu possible
+    # you don't need root to run cargo, so why not offer to get viu, if possible
     if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev/null) ]]; then
-	    read -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews (y/N)? " answer
+	    read -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews [y/N]? " answer
 	    echo
 	    case ${answer} in
 		y|Y )
 		    cargo install viu
 		    ;;
 		n|N )
-		    echo "   cool, invoke $0 with the -n option to disable this prompt"
+		    echo "   Cool, you can invoke $0 with the -n option to disable this prompt."
 		;;
 	    esac
     fi
@@ -107,8 +107,8 @@ else
     mogrify -rotate 90 -flop -compress none "${tmpname}"
 fi
 
-# the greyscale colors are 16 byte colors, but we only 5 colors to work with, 2 of which will be used for background blocks, depending on whether there are prior commits
-# we want to reduce this to no more than 4
+# the greyscale colors are 16-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
+# we want to reduce this to no more than 4 colors
 I=${maxcolors}
 while read line
 do
