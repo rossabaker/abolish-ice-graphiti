@@ -17,8 +17,10 @@ Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dir
 \t -f, --font <font>\t select a font (name or filepath) for rendering [default '${font}'] \n
 \t -s, --size <fontsize>\t select a font size for rendering [default '${pt}'] \n
 \t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}'] \n
+\t -b, --background\t uniform background color (uses one foreground color) \n
 \t -p, --partial\t\t render pixels to the current partial week, if needed. \n
 \t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname} \n
+\t -d, --debug\t\t debugging output \n
 \t -h, --help\t\t see this message and exit"
 
 while (( "$#" )); do
@@ -41,8 +43,15 @@ while (( "$#" )); do
 	    numcolors=$2
 	    shift
 	    ;;
+	-b|--background)
+	    ((--numcolors))
+	    background=1
+	    ;;
 	-t|--temp)
 	    tmpname="/tmp/${tmpname}"
+	    ;;
+	-d|--debug)
+	    debug=1
 	    ;;
 	-h|--help)
 	    echo -e ${usage}
@@ -76,7 +85,7 @@ if [ -z $(which convert 2> /dev/null) ]; then
     fi
 else
     # render the image to a greyscale, acsii format for easy parsing
-    convert -pointsize ${pt} -font "${font}" -fill black -colors $((${numcolors}+1)) -background white -size ${weeks}x7 -gravity center label:'ABOLISH ICE' -compress none "pgm:${tmpname}"
+    convert -pointsize ${pt} -font "${font}" -fill black -colors $((${numcolors}+2)) -background white -size ${weeks}x7 -gravity center label:'ABOLISH ICE' -compress none "pgm:${tmpname}"
 
     err=$?
     if [ ! $err ]; then
@@ -112,12 +121,17 @@ fi
 I=${maxcolors}
 while read line
 do
-    #echo $line $I
-    colormap[${line}]=$I
-    ((--I))
-    if [ $I -eq $((${maxcolors}-${numcolors})) ]; then
-	break
+    if [ $I -gt $((${maxcolors}-${numcolors})) ]; then
+	colormap[${line}]=$I
+	if [ ! -z ${debug} ]; then
+	    echo $line $I
+	fi
+    else
+	if [ ! -z ${debug} ]; then
+	    echo " discarding ${line} ${I}"
+	fi
     fi
+    ((--I))
 
     # makes a list of unique colors in the image:
     #   remove 3 lines of metadata, turn 2D array of pixels into 1D, sort,
@@ -143,6 +157,9 @@ do
 	color=${colormap[$i]}
 	if [ ! -z ${color} ]; then
 	    echo "$(date --date "${start} +${day} days" ${iso})-${color}" >> "${outname}"
+	else if [ ! -z ${background} ]; then
+		 echo "$(date --date "${start} +${day} days" ${iso})-1" >> "${outname}"
+	     fi
 	fi
 	((++day))
     done
