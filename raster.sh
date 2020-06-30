@@ -76,8 +76,8 @@ if [ -z $(which convert 2> /dev/null) ]; then
     else if [ "$(head -n1 ${tmpname})" != "P2" ]; then
 	     echo "only uncompressed .ngm image files are supported"
 	     exit 11
-	 else if [ "$(head -2 ${tmpname}|tail -1)" != "7 ${weeks}" ]; then
-		  echo "image must be 7x${weeks} (${weeks}x7 rotated 90 degrees, and reflected)"
+	 else if [ "$(head -2 ${tmpname}|tail -1)" != "${weeks} 7" ]; then
+		  echo "image must be ${weeks}x7"
 		  exit 12
 
 	      fi
@@ -111,9 +111,6 @@ else
     if [ ! -z $(which viu 2> /dev/null) ]; then
 	viu "${tmpname}"
     fi
-
-    # it's easier to process the file if we re-orient the image (can probably skip this with a smarter loop)
-    mogrify -rotate 90 -flop -compress none "${tmpname}"
 fi
 
 # the greyscale colors are 16-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
@@ -147,20 +144,21 @@ start="$(date --date "${start} -${dow} days -52 weeks" ${iso})"
 
 echo Starting on $start ... >&2
 day=0
-truncate --size 0 "${outname}"
 
 # image is already in calendar order, ${weeks} row/weeks of 7 column/days
 while read line
 do
+    week=0
     for i in $line
     do
 	color=${colormap[$i]}
 	if [ ! -z ${color} ]; then
-	    echo "$(date --date "${start} +${day} days" ${iso})-${color}" >> "${outname}"
+	    echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-${color}"
 	else if [ ! -z ${background} ]; then
-		 echo "$(date --date "${start} +${day} days" ${iso})-1" >> "${outname}"
+		 echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-1"
 	     fi
 	fi
-	((++day))
+	((++week))
     done
-done <<< $(tail +4 "${tmpname}")
+    ((++day))
+done <<< $(tail +4 "${tmpname}") | sort -n > ${outname}
