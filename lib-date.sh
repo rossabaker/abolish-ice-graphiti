@@ -23,14 +23,19 @@ get_current_date() {
     fi
 }
 
-# takes a date and returns the day of week as an int 0-6 (Sun-Sat)
+# optionally takes a date, and returns the day of week as an int 0-6 (Sun-Sat)
 get_dow() {
-    date="$1"
-    if [ -z "$_gnudate" ]; then
-	dow="$(date -j -f "$dateformat" "$date" "+$_day")"
+    if [ $# -eq 0 ]; then
+	dow="$(date "+$_day")"
     else
-	dow="$(date --date "$date" "+$_day")"
+	date="$1"
+	if [ -z "$_gnudate" ]; then
+	    dow="$(date -j -f "$dateformat" "$date" "+$_day")"
+	else
+	    dow="$(date --date "$date" "+$_day")"
+	fi
     fi
+
     dow="$(($dow % 7))"
     echo $dow
 }
@@ -59,7 +64,7 @@ add_days() {
 }
 
 one_year_ago() {
-    days="$(get_dow $(get_current_date))"
+    days="$(get_dow)"
     if [ -z "$_gnudate" ]; then
 	yearago="$(date -j -v-"$days"d -v-"52"w "+$dateformat")"
     else
