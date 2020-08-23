@@ -9,7 +9,7 @@ dateformat="$_iso"
 
 date --date 2020-08-17 2>1 > /dev/null
 
-if [ $? ]; then
+if [ $? -eq 0 ]; then
     _gnudate=1
 fi
 
@@ -27,8 +27,8 @@ get_current_date() {
 get_dow() {
     date="$1"
     if [ -z "$_gnudate" ]; then
-	dow="$(date -j -f '$dateformat' "$date" "+$_day")"
-    els
+	dow="$(date -j -f "$dateformat" "$date" "+$_day")"
+    else
 	dow="$(date --date "$date" "+$_day")"
     fi
     dow="$(($dow % 7))"
@@ -50,7 +50,7 @@ add_days() {
     days="$(add_sign $2)"
 
     if [ -z "$_gnudate" ]; then
-	newdate="$(date -j -v"$days"d -f '$dateformat' "$date" "+$dateformat")"
+	newdate="$(date -j -v"$days"d -f "$dateformat" "$date" "+$dateformat")"
     else
         newdate="$(date --date "$date $days days" "+$dateformat")"
     fi
