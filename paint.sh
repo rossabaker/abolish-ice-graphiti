@@ -38,7 +38,7 @@ a="$(git rev-parse --abbrev-ref HEAD@{u} || echo origin/"$(git rev-parse --abbre
 remote="${a%%/*}"
 remote="${remote:-origin}"
 branch="${a#*/}"
-branch="${branch:-master}"
+branch="${branch:-main}"
 git push "$remote" HEAD:"$branch"
 
 if [ $? -ne 0 ] ; then
