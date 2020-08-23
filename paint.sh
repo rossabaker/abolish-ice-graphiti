@@ -25,11 +25,10 @@ do
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
-		s=$(printf "%02d" $(expr $i % 60))
-		m=$(printf "%02d" $(expr $i / 60))
-		export GIT_COMMITTER_DATE="$d 12:$m:$s"
-		export GIT_AUTHOR_DATE="$d 12:$m:$s"
-		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign --allow-empty
+		tm=$(date --utc --date "$d +${i}sec" '+%H:%M:%S')
+		export GIT_COMMITTER_DATE="$d $tm"
+		export GIT_AUTHOR_DATE="$d $tm"
+		git commit --date="$d $tm" -m "$i on $d" --no-gpg-sign --allow-empty
 	done
 done < "$(dirname "$0")/dates.txt"
 
