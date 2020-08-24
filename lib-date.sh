@@ -17,7 +17,7 @@ fi
 
 # adds a plus sign to positive numbers
 add_sign() {
-    if [ "$1" -ge 0 ]; then
+    if [ "$1" -gt 0 ]; then
 	echo "+$1"
     else
 	echo "$1"
