@@ -7,7 +7,7 @@ _day="%u"
 dateformat="$_iso"
 
 
-date --date 2020-08-17 2>1 > /dev/null
+date --date 2020-08-17 2>&1 > /dev/null
 
 if [ $? -eq 0 ]; then
     _gnudate=1
@@ -16,11 +16,7 @@ fi
 
 # returns current date in appropriate format
 get_current_date() {
-    if [ -z $_gnudate ]; then
-	date "+$dateformat"
-    else
-	date "+$dateformat"
-    fi
+    date "+$dateformat"
 }
 
 # optionally takes a date, and returns the day of week as an int 0-6 (Sun-Sat)
@@ -49,7 +45,7 @@ add_sign() {
     fi
 }
 
-# take a date and add (or subtract) some number of days
+# takes a date and adds (or subtracts) a given number of days
 add_days() {
     date="$1"
     days="$(add_sign $2)"
@@ -63,6 +59,7 @@ add_days() {
     echo "$newdate"
 }
 
+# not strictly speaking a year, but the begining of the github cotribution graph. 52 weeks + dow days ago
 one_year_ago() {
     days="$(get_dow)"
     if [ -z "$_gnudate" ]; then
