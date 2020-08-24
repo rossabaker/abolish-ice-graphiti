@@ -3,6 +3,8 @@
 # detect GNU date vs BSD date and provide wrapper functions
 
 _iso="%Y-%m-%d"
+_time="%H:%M:%S"
+_timeandzone="%T%Z"
 _day="%u"
 dateformat="$_iso"
 
@@ -13,6 +15,19 @@ if [ $? -eq 0 ]; then
     _gnudate=1
 fi
 
+### Utility Functions
+
+# adds a plus sign to positive numbers
+add_sign() {
+    if [ "$1" -ge 0 ]; then
+	echo "+$1"
+    else
+	echo "$1"
+    fi
+}
+
+
+### Functions that Output Dates
 
 # returns current date in appropriate format
 get_current_date() {
@@ -34,15 +49,6 @@ get_dow() {
 
     dow="$(($dow % 7))"
     echo $dow
-}
-
-# adds a plus sign to positive numbers
-add_sign() {
-    if [ "$1" -ge 0 ]; then
-	echo "+$1"
-    else
-	echo "$1"
-    fi
 }
 
 # takes a date and adds (or subtracts) a given number of days
@@ -69,4 +75,33 @@ one_year_ago() {
     fi
 
     echo "$yearago"
+}
+
+### Functions that Output Times
+
+# takes a date and adds (or subtracts) a given number of seconds
+add_seconds() {
+    date="$1"
+    secs="$(add_sign $2)"
+
+    if [ -z "$_gnudate" ]; then
+	newtime="$(date -j -v"$secs"S -f "$dateformat" "$date" "+$_time")"
+    else
+        newtime="$(date --date "$date $secs secs" "+$_time")"
+    fi
+
+    echo "$newtime"
+}
+
+# same as above but doesn't bother to ask for a date
+sec_to_time() {
+    secs="$(add_sign $1)"
+
+    if [ -z "$_gnudate" ]; then
+	newtime="$(date -j -u -v"$secs"S -f "$_timeandzone" "00:00:00UTC" "+$_time")"
+    else
+        newtime="$(date --date "00:00:00UTC $secs secs" "+$_time")"
+    fi
+
+    echo "$newtime"
 }
