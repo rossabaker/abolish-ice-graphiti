@@ -2,6 +2,8 @@
 
 set -e
 
+source "$(dirname "$0")/lib-date.sh"
+
 commitmax=${commitmax:-50}
 
 if [ ! -z "${username}" ]; then
@@ -25,7 +27,7 @@ do
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
-		tm=$(date --utc --date "$d +${i}sec" '+%H:%M:%S')
+		tm="$(sec_to_time ${i})"
 		export GIT_COMMITTER_DATE="$d $tm"
 		export GIT_AUTHOR_DATE="$d $tm"
 		git commit --date="$d $tm" -m "$i on $d" --no-gpg-sign --allow-empty
