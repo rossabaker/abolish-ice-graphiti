@@ -9,9 +9,7 @@ _day="%u"
 dateformat="$_iso"
 
 
-date --date 2020-08-17 2>&1 > /dev/null
-
-if [ $? -eq 0 ]; then
+if date --date 2020-08-17 > /dev/null 2>&1; then
     _gnudate=1
 fi
 
@@ -54,7 +52,7 @@ get_dow() {
 # takes a date and adds (or subtracts) a given number of days
 add_days() {
     date="$1"
-    days="$(add_sign $2)"
+    days="$(add_sign "$2")"
 
     if [ -z "$_gnudate" ]; then
 	newdate="$(date -j -v"$days"d -f "$dateformat" "$date" "+$dateformat")"
@@ -82,7 +80,7 @@ one_year_ago() {
 # takes a date and adds (or subtracts) a given number of seconds
 add_seconds() {
     date="$1"
-    secs="$(add_sign $2)"
+    secs="$(add_sign "$2")"
 
     if [ -z "$_gnudate" ]; then
 	newtime="$(date -j -v"$secs"S -f "$dateformat" "$date" "+$_time")"
@@ -95,7 +93,7 @@ add_seconds() {
 
 # same as above but doesn't bother to ask for a date
 sec_to_time() {
-    secs="$(add_sign $1)"
+    secs="$(add_sign "$1")"
 
     if [ -z "$_gnudate" ]; then
 	newtime="$(date -j -u -v"$secs"S -f "$_timeandzone" "00:00:00UTC" "+$_time")"

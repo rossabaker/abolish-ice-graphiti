@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck source=lib-date.sh
 source "$(dirname "$0")/lib-date.sh"
 
 commitmax=${commitmax:-50}
