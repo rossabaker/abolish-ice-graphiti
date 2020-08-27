@@ -2,6 +2,9 @@
 
 set -e
 
+# shellcheck source=lib-date.sh
+source "$(dirname "$0")/lib-date.sh"
+
 commitmax=${commitmax:-50}
 
 if [ ! -z "${username}" ]; then
@@ -25,11 +28,10 @@ do
 	d="$Y-$M-$D"
 	for i in $( eval echo {1..$I} )
 	do
-		s=$(printf "%02d" $(expr $i % 60))
-		m=$(printf "%02d" $(expr $i / 60))
-		export GIT_COMMITTER_DATE="$d 12:$m:$s"
-		export GIT_AUTHOR_DATE="$d 12:$m:$s"
-		git commit --date="$d 12:$m:$s" -m "$i on $d" --no-gpg-sign --allow-empty
+		tm="$(sec_to_time ${i})"
+		export GIT_COMMITTER_DATE="$d $tm"
+		export GIT_AUTHOR_DATE="$d $tm"
+		git commit --date="$d $tm" -m "$i on $d" --no-gpg-sign --allow-empty
 	done
 done < "$(dirname "$0")/dates.txt"
 
@@ -38,7 +40,7 @@ a="$(git rev-parse --abbrev-ref HEAD@{u} || echo origin/"$(git rev-parse --abbre
 remote="${a%%/*}"
 remote="${remote:-origin}"
 branch="${a#*/}"
-branch="${branch:-master}"
+branch="${branch:-main}"
 git push "$remote" HEAD:"$branch"
 
 if [ $? -ne 0 ] ; then

@@ -2,11 +2,12 @@
 
 set -e
 
-iso="+%Y-%m-%d"
-start="${1:-$(date $iso)}"
-dow="$(date --date "$start" '+%u')"
-dow="$(($dow % 7))"
-start="$(date --date "$start -$dow days" $iso)"
+# shellcheck source=lib-date.sh
+source "$(dirname "$0")/lib-date.sh"
+
+start="${1:-$(one_year_ago)}"
+dow="$(get_dow "$start")"
+start="$(add_days "$start" "-$dow")"
 
 echo Starting on $start ... >&2
 
@@ -17,9 +18,9 @@ do
 		[ -z "$i" ] && continue
 		[ "$i" -ge 0 -a "$i" -lt 7 ] || continue
 
-		myday="$(date --date "$start +$i days" $iso)"
+		myday="$(add_days "$start" "$i")"
 		echo ${myday}-4
 	done
 
-	start="$(date --date "$start +7 days" $iso)"
+	start="$(add_days "$start" "7")"
 done
