@@ -6,7 +6,7 @@ pt=${pt:-9}
 tmpname="${tmpname:-ai.pgm}"
 outname="${outname:-$(dirname "$0")/dates.txt}"
 
-weeks=52
+weeks=53
 maxcolors=4
 numcolors=${numcolors:-${maxcolors}}
 
@@ -18,7 +18,8 @@ Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dir
 \t -s, --size <fontsize>\t select a font size for rendering [default '${pt}'] \n
 \t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}'] \n
 \t -b, --background\t uniform background color (uses one foreground color) \n
-\t -p, --partial\t\t render pixels to the current partial week, if needed. \n
+\t -w\t\t\t week-day background only \n
+\t -p, --no-partial\t\t dont render pixels to the current partial week. \n
 \t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname} \n
 \t -d, --debug\t\t debugging output \n
 \t -h, --help\t\t see this message and exit"
@@ -32,8 +33,8 @@ while (( "$#" )); do
 	    font="$2"
 	    shift
 	    ;;
-	-p|--partial)
-	    ((++weeks))
+	-p|--no-partial)
+	    ((--weeks))
 	    ;;
 	-s|--size)
 	    pt=$2
@@ -46,6 +47,11 @@ while (( "$#" )); do
 	-b|--background)
 	    ((--numcolors))
 	    background=1
+	    ;;
+	-w)
+	    ((--numcolors))
+	    background=1
+	    weekend=1
 	    ;;
 	-t|--temp)
 	    tmpname="/tmp/${tmpname}"
@@ -84,36 +90,42 @@ if [ -z $(which convert 2> /dev/null) ]; then
 	 fi
     fi
 else
+
+    palette=palette.png
+    if [ ! -f ${palette} ]; then
+	convert -size 12x12 xc:#ebedf0 xc:#9be9a8 xc:#40c463 xc:#30a14e xc:#216e39 +append png:palette.png
+    fi
+
     # render the image to a greyscale, acsii format for easy parsing
-    convert -pointsize ${pt} -font "${font}" -fill black -colors $((${numcolors}+2)) -background white -size ${weeks}x7 -gravity center label:'ABOLISH ICE' -compress none "pgm:${tmpname}"
+    convert -pointsize ${pt} -font "${font}" -fill black -colors $((${numcolors}+2)) -background white -size ${weeks}x7 -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
 
     err=$?
     if [ ! $err ]; then
 	echo "Imagemagick failed, maybe it was built without truetype or fontconfig support?"
 	exit $err
     fi
-
-    # you don't need root to run cargo, so why not offer to get viu, if possible
-    if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev/null) ]]; then
-	    read -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews [y/N]? " answer
-	    echo
-	    case ${answer} in
-		y|Y )
-		    cargo install viu
-		    ;;
-		n|N )
-		    echo "   Cool, you can invoke $0 with the -n option to disable this prompt."
-		;;
-	    esac
-    fi
-
-    # give the a preview of what we'll put on the commit graph
-    if [ ! -z $(which viu 2> /dev/null) ]; then
-	viu "${tmpname}"
-    fi
 fi
 
-# the greyscale colors are 16-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
+# you don't need root to run cargo, so why not offer to get viu, if possible
+if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev/null) ]]; then
+    read -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews [y/N]? " answer
+    echo
+    case ${answer} in
+	y|Y )
+	    cargo install viu
+	    ;;
+	n|N )
+	    echo "   Cool, you can invoke $0 with the -n option to disable this prompt."
+	    ;;
+    esac
+fi
+
+# give the user a preview of what we'll put on the commit graph
+if [ ! -z $(which viu 2> /dev/null) ]; then
+    viu "${tmpname}"
+fi
+
+# the greyscale colors are 8-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
 # we want to reduce this to no more than 4 colors
 I=${maxcolors}
 while read line
@@ -154,8 +166,10 @@ do
 	color=${colormap[$i]}
 	if [ ! -z ${color} ]; then
 	    echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-${color}"
-	else if [ ! -z ${background} ]; then
-		 echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-1"
+	else if [[ ! -z ${background} ]]; then
+		 if [[ $day -ne 0 && $day -ne 1 &&  $day -ne 5 && $day -ne 6 || -z ${weekend} ]]; then
+		     echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-1"
+		 fi
 	     fi
 	fi
 	((++week))
