@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 font="${font:-Ubuntu}"
 pt=${pt:-9}
 
@@ -17,9 +19,13 @@ Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dir
 \t -f, --font <font>\t select a font (name or filepath) for rendering [default '${font}'] \n
 \t -s, --size <fontsize>\t select a font size for rendering [default '${pt}'] \n
 \t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}'] \n
-\t -b, --background\t uniform background color (uses one foreground color) \n
+\t -p, --palette\t\t use the final palette when rasterizing, instead of greyscale.\n
+\t\t\t\t\tNote: seems to result in fewer colors being used, maybe worse lettering \n
+\t -i, --invert\t\t Dark Mode. light text on a dark background. \n
+\t -b, --background\t uniform background color (uses one foreground color). \n
+\t\t\t\t\tNote: if inverted this affects the text color,\n
 \t -w\t\t\t week-day background only \n
-\t -p, --no-partial\t\t dont render pixels to the current partial week. \n
+\t -l, --no-partial\t dont render pixels to the current partial week. \n
 \t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname} \n
 \t -d, --debug\t\t debugging output \n
 \t -h, --help\t\t see this message and exit"
@@ -33,7 +39,7 @@ while (( "$#" )); do
 	    font="$2"
 	    shift
 	    ;;
-	-p|--no-partial)
+	-l|--no-partial)
 	    ((--weeks))
 	    ;;
 	-s|--size)
@@ -43,6 +49,12 @@ while (( "$#" )); do
 	-c|--colors)
 	    numcolors=$2
 	    shift
+	    ;;
+	-p|--palette)
+	    usepalette=1
+	    ;;
+	-i|--invert)
+	    invert=1
 	    ;;
 	-b|--background)
 	    ((--numcolors))
@@ -91,13 +103,27 @@ if [ -z $(which convert 2> /dev/null) ]; then
     fi
 else
 
-    palette=palette.png
-    if [ ! -f ${palette} ]; then
+    # generate palette file if missing
+    palettename=palette.png
+    if [ ! -f ${palettename} ]; then
 	convert -size 12x12 xc:#ebedf0 xc:#9be9a8 xc:#40c463 xc:#30a14e xc:#216e39 +append png:palette.png
     fi
 
+    colorcmd=""
+    if [ ! -z ${invert} ]; then
+	colorcmd+="-fill white -background black "
+    fi
+
+    # palette must be specified before number of colors
+    if [[ -f ${palettename} && ! -z ${usepalette} ]]; then
+	# FIXME: palettename cannot be properly quoted and will probably break if there is a space
+	colorcmd+="-remap ${palettename} "
+    fi
+
+    colorcmd+="-colors $((${numcolors}+2))"
+
     # render the image to a greyscale, acsii format for easy parsing
-    convert -pointsize ${pt} -font "${font}" -fill black -colors $((${numcolors}+2)) -background white -size ${weeks}x7 -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
+    convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
 
     err=$?
     if [ ! $err ]; then
@@ -120,7 +146,7 @@ if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev
     esac
 fi
 
-# give the user a preview of what we'll put on the commit graph
+# give the user a greyscale preview of what we'll put on the commit graph
 if [ ! -z $(which viu 2> /dev/null) ]; then
     viu "${tmpname}"
 fi
