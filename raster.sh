@@ -125,6 +125,10 @@ else
     # render the image to a greyscale, acsii format for easy parsing
     convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
 
+    if [[ ! -z ${usepalette} && ! -z $(which viu 2> /dev/null) ]]; then
+	convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' "png:${tmpname}.png";viu "${tmpname}.png";rm "${tmpname}.png"
+    fi
+
     err=$?
     if [ ! $err ]; then
 	echo "Imagemagick failed, maybe it was built without truetype or fontconfig support?"
@@ -166,7 +170,8 @@ do
 	    echo " discarding ${line} ${I}"
 	fi
     fi
-    ((--I))
+    # lol. this gets treated like an error when $I goes to 0, so then script dies with 'set -e'
+    ((--I)) || true
 
     # makes a list of unique colors in the image:
     #   remove 3 lines of metadata, turn 2D array of pixels into 1D, sort,
@@ -175,30 +180,30 @@ done <<< $(tail +4 "${tmpname}"|tr ' ' '\n'|sort -n|uniq|grep -v "^$" )
 
 
 # inspired by dates.sh, turns image's pixels, by position and color, into dates.txt
-iso="+%Y-%m-%d"
-dow="$(date --date "${start}" '+%u')"
-dow="$((${dow} % 7))"
-start="$(date --date "${start} -${dow} days -52 weeks" ${iso})"
+
+# shellcheck source=lib-date.sh
+source "$(dirname "$0")/lib-date.sh"
+start="$(one_year_ago)"
 
 echo Starting on $start ... >&2
-day=0
 
-# image is already in calendar order, ${weeks} row/weeks of 7 column/days
+# image is not in calendar order, we iterate all the sundays first, then mondays, etc.
+#    so the output is sorted before being written
 while read line
 do
-    week=0
+    weeks=0
     for i in $line
     do
 	color=${colormap[$i]}
 	if [ ! -z ${color} ]; then
-	    echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-${color}"
+	    echo "$(add_weeks "${start}" "${weeks}")-${color}"
 	else if [[ ! -z ${background} ]]; then
 		 if [[ $day -ne 0 && $day -ne 1 &&  $day -ne 5 && $day -ne 6 || -z ${weekend} ]]; then
-		     echo "$(date --date "${start} +${week} weeks +${day} days" ${iso})-1"
+		     echo "$(add_weeks "${start}" "${weeks}")-1"
 		 fi
 	     fi
 	fi
-	((++week))
+	((++weeks))
     done
-    ((++day))
+    start="$(add_days "${start}" 1)"
 done <<< $(tail +4 "${tmpname}") | sort -n > ${outname}

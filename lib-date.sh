@@ -63,6 +63,20 @@ add_days() {
     echo "$newdate"
 }
 
+# takes a date and adds (or subtracts) a given number of weekss
+add_weeks() {
+    date="$1"
+    weeks="$(add_sign "$2")"
+
+    if [ -z "$_gnudate" ]; then
+	newdate="$(date -j -v"$weeks"w -f "$dateformat" "$date" "+$dateformat")"
+    else
+        newdate="$(date --date "$date $weeks weeks" "+$dateformat")"
+    fi
+
+    echo "$newdate"
+}
+
 # not strictly speaking a year, but the begining of the github cotribution graph. 52 weeks + dow days ago
 one_year_ago() {
     days="$(get_dow)"
