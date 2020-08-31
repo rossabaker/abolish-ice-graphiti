@@ -15,19 +15,19 @@ numcolors=${numcolors:-${maxcolors}}
 usage="Usage: $0 [OPTIONS] \n
 Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dirname "$0")/paint.sh\n
 \n
-\t -n\t\t\t disable prompts \n
-\t -f, --font <font>\t select a font (name or filepath) for rendering [default '${font}'] \n
-\t -s, --size <fontsize>\t select a font size for rendering [default '${pt}'] \n
-\t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}'] \n
-\t -p, --palette\t\t use the final palette when rasterizing, instead of greyscale.\n
-\t\t\t\t\tNote: seems to result in fewer colors being used, maybe worse lettering \n
-\t -i, --invert\t\t Dark Mode. light text on a dark background. \n
-\t -b, --background\t uniform background color (uses one foreground color). \n
-\t\t\t\t\tNote: if inverted this affects the text color,\n
-\t -w\t\t\t week-day background only \n
-\t -l, --no-partial\t dont render pixels to the current partial week. \n
-\t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname} \n
-\t -d, --debug\t\t debugging output \n
+\t -n\t\t\t disable prompts\n
+\t -f, --font <font>\t select a font (name or filepath) for rendering [default '${font}']\n
+\t -s, --size <fontsize>\t select a font size for rendering [default '${pt}']\n
+\t -c, --colors <colors>\t set the number of foreground colors to be used [maximum '${maxcolors}']\n
+\t -p, --palette\t\t use the final palette when rasterizing, instead of greyscale\n
+\t\t\t\t\tNote: seems to result in fewer colors being used, maybe worse lettering\n
+\t -i, --invert\t\t Dark Mode. light text on a dark background\n
+\t -b, --background\t uniform background color (uses one foreground color)\n
+\t\t\t\t\tNote: if inverted this affects the text color\n
+\t -w\t\t\t week-day background only\n
+\t -l, --no-partial\t dont render pixels to the current partial week\n
+\t -t, --temp\t\t use a temporary file for image, rather than overwriting ${tmpname}\n
+\t -d, --debug\t\t debugging output\n
 \t -h, --help\t\t see this message and exit"
 
 while (( "$#" )); do
