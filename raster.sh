@@ -125,6 +125,7 @@ else
     # render the image to a greyscale, acsii format for easy parsing
     convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
 
+    # give a full color preview if we are using a palette and have viu
     if [[ ! -z ${usepalette} && ! -z $(which viu 2> /dev/null) ]]; then
 	convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' "png:${tmpname}.png";viu "${tmpname}.png";rm "${tmpname}.png"
     fi
@@ -158,10 +159,12 @@ fi
 # the greyscale colors are 8-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
 # we want to reduce this to no more than 4 colors
 I=${maxcolors}
+colormap=()
 while read line
 do
-    if [ $I -gt $((${maxcolors}-${numcolors})) ]; then
-	colormap[${line}]=$I
+    if [ ${I} -gt $((${maxcolors}-${numcolors})) ]; then
+	# bash arrays are sparse wo we can just write to the proper index
+	colormap[${I}]="${line}"
 	if [ ! -z ${debug} ]; then
 	    echo $line $I
 	fi
@@ -178,6 +181,22 @@ do
     #     remove duplicates and remove empty lines
 done <<< $(tail +4 "${tmpname}"|tr ' ' '\n'|sort -n|uniq|grep -v "^$" )
 
+if [ ! -z ${debug} ]; then
+    echo "${!colormap[@]}" "${colormap[@]}"
+fi
+
+# function for looking up a color in the colormap, so that we don't need an associative array
+lookup_color() {
+    target=$1
+    # ! iterates indices
+    for i in ${!colormap[@]}
+    do
+	if [ ${colormap[$i]} -eq ${target} ]; then
+	    echo $i
+	    return
+	fi
+    done
+}
 
 # inspired by dates.sh, turns image's pixels, by position and color, into dates.txt
 
@@ -194,7 +213,7 @@ do
     weeks=0
     for i in $line
     do
-	color=${colormap[$i]}
+	color="$(lookup_color ${i})"
 	if [ ! -z ${color} ]; then
 	    echo "$(add_weeks "${start}" "${weeks}")-${color}"
 	else if [[ ! -z ${background} ]]; then
