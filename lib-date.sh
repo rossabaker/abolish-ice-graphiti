@@ -33,6 +33,7 @@ get_current_date() {
 }
 
 # optionally takes a date, and returns the day of week as an int 0-6 (Sun-Sat)
+# shellcheck disable=SC2120
 get_dow() {
     if [ $# -eq 0 ]; then
 	dow="$(date "+$_day")"
@@ -45,7 +46,7 @@ get_dow() {
 	fi
     fi
 
-    dow="$(($dow % 7))"
+    dow="$((dow % 7))"
     echo $dow
 }
 

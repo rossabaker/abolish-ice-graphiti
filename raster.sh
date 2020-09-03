@@ -12,7 +12,7 @@ weeks=53
 maxcolors=4
 numcolors=${numcolors:-${maxcolors}}
 
-usage="Usage: $0 [OPTIONS] \n
+usage="Usage: $0 [OPTIONS]\n
 Render the text 'ABOLISH ICE' with a given font to ${outname} for use with $(dirname "$0")/paint.sh\n
 \n
 \t -n\t\t\t disable prompts\n
@@ -72,7 +72,7 @@ while (( "$#" )); do
 	    debug=1
 	    ;;
 	-h|--help)
-	    echo -e ${usage}
+	    echo -e "${usage}"
 	    exit
 	    ;;
     esac
@@ -81,25 +81,23 @@ done
 
 
 # validation
-if [ ${numcolors} -gt ${maxcolors} ]; then
-    numcolors=${maxcolors}
+if [ "${numcolors}" -gt "${maxcolors}" ]; then
+    numcolors="${maxcolors}"
 fi
 
 
 # decide if we have the tools to generate $tmpname, or if not, if we have a valid file to use
-if [ -z $(which convert 2> /dev/null) ]; then
+if [ -z "$(which convert 2> /dev/null)" ]; then
     if [ ! -f "${tmpname}" ]; then
 	echo "This script requires imagemagick to be installed or an uncompressed .ngm image to be supplied."
 	exit 10
-    else if [ "$(head -n1 ${tmpname})" != "P2" ]; then
-	     echo "only uncompressed .ngm image files are supported"
-	     exit 11
-	 else if [ "$(head -2 ${tmpname}|tail -1)" != "${weeks} 7" ]; then
-		  echo "image must be ${weeks}x7"
-		  exit 12
+    elif [ "$(head -n1 "${tmpname}")" != "P2" ]; then
+	echo "only uncompressed .ngm image files are supported"
+	exit 11
+    elif [ "$(head -2 "${tmpname}"|tail -1)" != "${weeks} 7" ]; then
+	echo "image must be ${weeks}x7"
+	exit 12
 
-	      fi
-	 fi
     fi
 else
 
@@ -110,24 +108,24 @@ else
     fi
 
     colorcmd=""
-    if [ ! -z ${invert} ]; then
+    if [ -n "${invert}" ]; then
 	colorcmd+="-fill white -background black "
     fi
 
     # palette must be specified before number of colors
-    if [[ -f ${palettename} && ! -z ${usepalette} ]]; then
+    if [[ -f ${palettename} && -n ${usepalette} ]]; then
 	# FIXME: palettename cannot be properly quoted and will probably break if there is a space
 	colorcmd+="-remap ${palettename} "
     fi
 
-    colorcmd+="-colors $((${numcolors}+2))"
+    colorcmd+="-colors $((numcolors+2))"
 
     # render the image to a greyscale, acsii format for easy parsing
-    convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
+    convert -pointsize "${pt}" -font "${font}" -size "${weeks}x7" ${colorcmd} -gravity center label:'ABOLISH ICE' -depth 8 -compress none "pgm:${tmpname}"
 
     # give a full color preview if we are using a palette and have viu
-    if [[ ! -z ${usepalette} && ! -z $(which viu 2> /dev/null) ]]; then
-	convert -pointsize ${pt} -font "${font}" -size ${weeks}x7 ${colorcmd} -gravity center label:'ABOLISH ICE' "png:${tmpname}.png";viu "${tmpname}.png";rm "${tmpname}.png"
+    if [[ -n "${usepalette}" && -n "$(which viu 2> /dev/null)" ]]; then
+	convert -pointsize "${pt}" -font "${font}" -size "${weeks}x7" ${colorcmd} -gravity center label:'ABOLISH ICE' "png:${tmpname}.png";viu "${tmpname}.png";rm "${tmpname}.png"
     fi
 
     err=$?
@@ -138,8 +136,8 @@ else
 fi
 
 # you don't need root to run cargo, so why not offer to get viu, if possible
-if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev/null) ]]; then
-    read -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews [y/N]? " answer
+if [[ -z "$noprompt" && -z "$(which viu 2> /dev/null)" && -n "$(which cargo 2> /dev/null)" ]]; then
+    read -r -t 5 -n 1 -p " Would you like to 'cargo install viu' for image previews [y/N]? " answer
     echo
     case ${answer} in
 	y|Y )
@@ -152,24 +150,24 @@ if [[ -z $noprompt && -z $(which viu 2> /dev/null) && ! -z $(which cargo 2> /dev
 fi
 
 # give the user a greyscale preview of what we'll put on the commit graph
-if [ ! -z $(which viu 2> /dev/null) ]; then
+if [ -n "$(which viu 2> /dev/null)" ]; then
     viu "${tmpname}"
 fi
 
 # the greyscale colors are 8-bit colors, but we only have 5 colors to work with, 2 of which will be used for background blocks, depending on whether a given day has prior commits or not
 # we want to reduce this to no more than 4 colors
-I=${maxcolors}
+I="${maxcolors}"
 colormap=()
-while read line
+while read -r line
 do
-    if [ ${I} -gt $((${maxcolors}-${numcolors})) ]; then
+    if [ "${I}" -gt "$((maxcolors - numcolors))" ]; then
 	# bash arrays are sparse wo we can just write to the proper index
 	colormap[${I}]="${line}"
-	if [ ! -z ${debug} ]; then
-	    echo $line $I
+	if [ -n "${debug}" ]; then
+	    echo "${line}  ${I}"
 	fi
     else
-	if [ ! -z ${debug} ]; then
+	if [ -n "${debug}" ]; then
 	    echo " discarding ${line} ${I}"
 	fi
     fi
@@ -179,9 +177,9 @@ do
     # makes a list of unique colors in the image:
     #   remove 3 lines of metadata, turn 2D array of pixels into 1D, sort,
     #     remove duplicates and remove empty lines
-done <<< $(tail +4 "${tmpname}"|tr ' ' '\n'|sort -n|uniq|grep -v "^$" )
+done <<< "$(tail +4 "${tmpname}"|tr ' ' '\n'|sort -n|uniq|grep -v "^$" )"
 
-if [ ! -z ${debug} ]; then
+if [ -n "${debug}" ]; then
     echo "${!colormap[@]}" "${colormap[@]}"
 fi
 
@@ -189,10 +187,10 @@ fi
 lookup_color() {
     target=$1
     # ! iterates indices
-    for i in ${!colormap[@]}
+    for i in "${!colormap[@]}"
     do
-	if [ ${colormap[$i]} -eq ${target} ]; then
-	    echo $i
+	if [ "${colormap[$i]}" -eq "${target}" ]; then
+	    echo "$i"
 	    return
 	fi
     done
@@ -204,25 +202,26 @@ lookup_color() {
 source "$(dirname "$0")/lib-date.sh"
 start="$(one_year_ago)"
 
-echo Starting on $start ... >&2
+echo "Starting on $start ..." >&2
 
 # image is not in calendar order, we iterate all the sundays first, then mondays, etc.
 #    so the output is sorted before being written
-while read line
+days=0
+while read -r line
 do
     weeks=0
     for i in $line
     do
-	color="$(lookup_color ${i})"
-	if [ ! -z ${color} ]; then
+	color="$(lookup_color "${i}")"
+	if [ -n "${color}" ]; then
 	    echo "$(add_weeks "${start}" "${weeks}")-${color}"
-	else if [[ ! -z ${background} ]]; then
-		 if [[ $day -ne 0 && $day -ne 1 &&  $day -ne 5 && $day -ne 6 || -z ${weekend} ]]; then
-		     echo "$(add_weeks "${start}" "${weeks}")-1"
-		 fi
-	     fi
+	elif [[ -n "${background}" ]]; then
+	    if [[ -z "${weekend}" || $days -ne 0 && $days -ne 1 && $days -ne 5 && $days -ne 6 ]]; then
+		echo "$(add_weeks "${start}" "${weeks}")-1"
+	    fi
 	fi
 	((++weeks))
     done
+    ((++days))
     start="$(add_days "${start}" 1)"
-done <<< $(tail +4 "${tmpname}") | sort -n > ${outname}
+done <<< "$(tail +4 "${tmpname}")" | sort -n > ${outname}
