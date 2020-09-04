@@ -33,6 +33,7 @@ get_current_date() {
 }
 
 # optionally takes a date, and returns the day of week as an int 0-6 (Sun-Sat)
+# shellcheck disable=SC2120
 get_dow() {
     if [ $# -eq 0 ]; then
 	dow="$(date "+$_day")"
@@ -45,7 +46,7 @@ get_dow() {
 	fi
     fi
 
-    dow="$(($dow % 7))"
+    dow="$((dow % 7))"
     echo $dow
 }
 
@@ -58,6 +59,20 @@ add_days() {
 	newdate="$(date -j -v"$days"d -f "$dateformat" "$date" "+$dateformat")"
     else
         newdate="$(date --date "$date $days days" "+$dateformat")"
+    fi
+
+    echo "$newdate"
+}
+
+# takes a date and adds (or subtracts) a given number of weekss
+add_weeks() {
+    date="$1"
+    weeks="$(add_sign "$2")"
+
+    if [ -z "$_gnudate" ]; then
+	newdate="$(date -j -v"$weeks"w -f "$dateformat" "$date" "+$dateformat")"
+    else
+        newdate="$(date --date "$date $weeks weeks" "+$dateformat")"
     fi
 
     echo "$newdate"
