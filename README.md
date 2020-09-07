@@ -10,9 +10,9 @@
 2. On Github, create a new target repo to be graffitied.  I like `abolish-ice`
 3. get a local copy of the target repository with `git clone`
 4. make a new branch, perhaps `git checkout -b drop-ice`
-6. run `username=<user> <path_to_repo>/abolish-ice-graphiti/paint.sh` in the target repo, with your git user name so we get the commit count right,
-   - or  `<path_to_repo>/abolish-ice-graphiti/paint.sh` if you don't have have `curl`/`wget`
-   - or `commitmax=<most_commits_in_one_day> <path_to_repo>//abolish-ice-graphiti/paint.sh` if you don't have `curl`/`wget` and your colors are wrong cuz you have a pre-existing day with more than 50 commits (see Troubleshooting below)
+6. run `username=<user> ./<path_to_repo>/abolish-ice-graphiti/paint.sh` in the target repo, with your git user name so we get the commit count right,
+   - or  `./<path_to_repo>/abolish-ice-graphiti/paint.sh` if you don't have have `curl`/`wget`
+   - or `commitmax=<most_commits_in_one_day> ./<path_to_repo>//abolish-ice-graphiti/paint.sh` if you don't have `curl`/`wget` and your colors are wrong cuz you have a pre-existing day with more than 50 commits (see Troubleshooting below)
 7. [optionally] switch default branch back and forth if things look wrong (see Troubleshooting below)
 
 ### refreshing
