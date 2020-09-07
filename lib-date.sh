@@ -78,7 +78,7 @@ add_weeks() {
     echo "$newdate"
 }
 
-# not strictly speaking a year, but the begining of the github cotribution graph. 52 weeks + dow days ago
+# not strictly speaking a year, but the begining of the github contribution graph. 52 weeks + dow days ago
 one_year_ago() {
     days="$(get_dow)"
     if [ -z "$_gnudate" ]; then
